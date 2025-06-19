@@ -2,4 +2,8 @@
 <resources>
     <string name="receive_clash_broadcasts">Receive Clash Broadcasts</string>
     <string name="receive_broadcasts_of_clash">Receive broadcasts of clash services</string>
+    <string name="application_name_alpha">ClashMeta Alpha</string>
+    <string name="launch_name_alpha">ClashMeta Alpha</string>
+    <string name="application_name_meta">ClashMeta</string>
+    <string name="launch_name_meta">ClashMeta</string>
 </resources>
