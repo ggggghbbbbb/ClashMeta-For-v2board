@@ -24,7 +24,58 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 import com.github.kr328.clash.design.R
 
+//新增
+import android.content.Intent
+import android.os.Bundle
+import android.widget.Button
+import android.widget.Toast
+import com.github.kr328.clash.design.MainDesign
+import com.github.kr328.clash.service.V2boardService
+import kotlinx.coroutines.*
+//结束
+
 class MainActivity : BaseActivity<MainDesign>() {
+    private lateinit var v2boardService: V2boardService
+
+    override suspend fun main() {
+        v2boardService = V2boardService(this)
+        val design = MainDesign(this)
+        setContentDesign(design)
+
+        val token = v2boardService.getSavedToken()
+        if (token.isNullOrEmpty()) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+            return
+        }
+
+        // 新增：客服、公告按钮事件
+        design.root.findViewById<Button>(R.id.supportButton)?.setOnClickListener {
+            startActivity(Intent(this, SupportWebActivity::class.java))
+        }
+        design.root.findViewById<Button>(R.id.announcementButton)?.setOnClickListener {
+            GlobalScope.launch(Dispatchers.Main) {
+                val announcement = withContext(Dispatchers.IO) { v2boardService.getAnnouncement() }
+                if (!announcement.isNullOrEmpty()) {
+                    androidx.appcompat.app.AlertDialog.Builder(this@MainActivity)
+                        .setTitle("公告")
+                        .setMessage(announcement)
+                        .setPositiveButton("知道了", null)
+                        .show()
+                } else {
+                    Toast.makeText(this@MainActivity, "暂无公告", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+
+
+
+
+
+
+    
     override suspend fun main() {
         val design = MainDesign(this)
 
