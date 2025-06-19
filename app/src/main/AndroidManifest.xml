@@ -18,11 +18,6 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <application
-
-        <!-- 新增 -->
-        <activity android:name=".SupportWebActivity" android:exported="false"/>
-        <!-- 结束 -->
-        
         android:name=".MainApplication"
         android:allowBackup="true"
         android:banner="@mipmap/ic_banner"
@@ -35,6 +30,10 @@
         android:theme="@style/BootstrapTheme"
         tools:ignore="GoogleAppIndexingWarning"
         tools:targetApi="N">
+
+        <!-- 新增 SupportWebActivity，必须放 application 内部 -->
+        <activity android:name=".SupportWebActivity" android:exported="false"/>
+
         <meta-data
             android:name="releaseName"
             android:value="@string/release_name" />
@@ -72,13 +71,12 @@
             android:name=".ExternalControlActivity"
             android:exported="true"
             android:label="@string/external_control_activity"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen">
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"
+            android:configChanges="uiMode">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
                 <data android:scheme="clash"/>
                 <data android:scheme="clashmeta"/>
                 <data android:host="install-config"/>
