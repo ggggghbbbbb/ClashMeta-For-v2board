@@ -18,6 +18,11 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <application
+
+        <!-- 新增 -->
+        <activity android:name=".SupportWebActivity" android:exported="false"/>
+        <!-- 结束 -->
+        
         android:name=".MainApplication"
         android:allowBackup="true"
         android:banner="@mipmap/ic_banner"
