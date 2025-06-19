@@ -10,7 +10,7 @@ plugins {
 
 dependencies {
 
-    implementation 'com.squareup.okhttp3:okhttp:4.9.1'
+    implementation("com.squareup.okhttp3:okhttp:4.9.1")
 
 
 
