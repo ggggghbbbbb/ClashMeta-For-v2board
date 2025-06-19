@@ -16,11 +16,11 @@ class LoginActivity : BaseActivity<LoginDesign>() {
         val design = LoginDesign(this)
         setContentDesign(design)
 
-        // 公告弹窗（首次）
+        // 公告弹窗（首次登录只弹一次）
         val sp = getSharedPreferences("v2board", MODE_PRIVATE)
         if (!sp.getBoolean("show_announcement", false)) {
             val announcement = withContext(Dispatchers.IO) { v2boardService.getAnnouncement() }
-            if (announcement != null && announcement.isNotEmpty()) {
+            if (!announcement.isNullOrEmpty()) {
                 design.showAnnouncementPopup(announcement)
             }
             sp.edit().putBoolean("show_announcement", true).apply()
@@ -29,7 +29,7 @@ class LoginActivity : BaseActivity<LoginDesign>() {
         design.announcementButton.setOnClickListener {
             GlobalScope.launch(Dispatchers.Main) {
                 val announcement = withContext(Dispatchers.IO) { v2boardService.getAnnouncement() }
-                if (announcement != null && announcement.isNotEmpty()) {
+                if (!announcement.isNullOrEmpty()) {
                     design.showAnnouncementPopup(announcement)
                 } else {
                     Toast.makeText(this@LoginActivity, "暂无公告", Toast.LENGTH_SHORT).show()
@@ -49,10 +49,8 @@ class LoginActivity : BaseActivity<LoginDesign>() {
                 if (token != null) {
                     val subUrl = v2boardService.getSubscribeUrl(token)
                     if (subUrl != null) {
-                        // 自动导入订阅（伪代码，实际用你项目里的Profile导入API）
                         withProfile { create(Profile.Type.Url, "v2board订阅", subUrl) }
                     }
-                    // 跳转主界面
                     withContext(Dispatchers.Main) {
                         startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                         finish()
