@@ -1,4 +1,6 @@
-## Clash Meta for Android
+## Clash Meta for Android to v2board
+
+此项目将xiao修改版的v2board集成到clashneta中
 
 A Graphical user interface of [Clash.Meta](https://github.com/MetaCubeX/Clash.Meta) for Android
 
