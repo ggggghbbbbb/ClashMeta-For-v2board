@@ -1,35 +1,68 @@
-// 增加获取订阅链接和用户信息的接口
-suspend fun getUserInfo(token: String): JSONObject? {
-    val domain = currentDomain ?: getAvailableDomain() ?: return null
-    val request = Request.Builder()
-        .url("$domain/api/v1/user/info")
-        .header("Authorization", "Bearer $token")
-        .build()
-    return try {
-        client.newCall(request).execute().use { response ->
-            if (response.isSuccessful) {
-                JSONObject(response.body?.string() ?: "")
-            } else null
-        }
-    } catch (e: Exception) {
-        null
-    }
-}
+package com.github.kr328.clash
 
+import android.content.Intent
+import android.os.Bundle
+import android.widget.Toast
+import com.github.kr328.clash.design.LoginDesign
+import com.github.kr328.clash.service.V2boardService
+import kotlinx.coroutines.*
+import com.github.kr328.clash.service.model.Profile
 
-suspend fun getSubscribeUrl(token: String): String? {
-    val domain = currentDomain ?: getAvailableDomain() ?: return null
-    val request = Request.Builder()
-        .url("$domain/api/v1/user/getSubscribe")
-        .header("Authorization", "Bearer $token")
-        .build()
-    return try {
-        client.newCall(request).execute().use { response ->
-            if (response.isSuccessful) {
-                JSONObject(response.body?.string() ?: "").optString("data", null)
-            } else null
+class LoginActivity : BaseActivity<LoginDesign>() {
+    private lateinit var v2boardService: V2boardService
+
+    override suspend fun main() {
+        v2boardService = V2boardService(this)
+        val design = LoginDesign(this)
+        setContentDesign(design)
+
+        // 公告弹窗（首次）
+        val sp = getSharedPreferences("v2board", MODE_PRIVATE)
+        if (!sp.getBoolean("show_announcement", false)) {
+            val announcement = withContext(Dispatchers.IO) { v2boardService.getAnnouncement() }
+            if (announcement != null && announcement.isNotEmpty()) {
+                design.showAnnouncementPopup(announcement)
+            }
+            sp.edit().putBoolean("show_announcement", true).apply()
         }
-    } catch (e: Exception) {
-        null
+        // 公告按钮
+        design.announcementButton.setOnClickListener {
+            GlobalScope.launch(Dispatchers.Main) {
+                val announcement = withContext(Dispatchers.IO) { v2boardService.getAnnouncement() }
+                if (announcement != null && announcement.isNotEmpty()) {
+                    design.showAnnouncementPopup(announcement)
+                } else {
+                    Toast.makeText(this@LoginActivity, "暂无公告", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        // 客服按钮
+        design.supportButton.setOnClickListener {
+            startActivity(Intent(this, SupportWebActivity::class.java))
+        }
+        // 登录按钮
+        design.loginButton.setOnClickListener {
+            val username = design.usernameEdit.text.toString()
+            val password = design.passwordEdit.text.toString()
+            GlobalScope.launch(Dispatchers.IO) {
+                val token = v2boardService.login(username, password)
+                if (token != null) {
+                    val subUrl = v2boardService.getSubscribeUrl(token)
+                    if (subUrl != null) {
+                        // 自动导入订阅（伪代码，实际用你项目里的Profile导入API）
+                        withProfile { create(Profile.Type.Url, "v2board订阅", subUrl) }
+                    }
+                    // 跳转主界面
+                    withContext(Dispatchers.Main) {
+                        startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+                        finish()
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@LoginActivity, "登录失败", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
     }
 }
